@@ -36,9 +36,9 @@ db.init = () => {
     db.sequelize.sync()
 
     // mock
-    const mock = require('./mock')
-    mock(db)
-        .then(() => console.log('mock completed'))
+    // const mock = require('./mock')
+    // mock(db)
+    //     .then(() => console.log('mock completed'))
 }
 
 module.exports = db;

@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => sequelize.define('members', {
     name: {
         type: Sequelize.STRING
     },
-    penalties_until: {
+    penaltiesUntil: {
         type: Sequelize.DATE,
         allowNull: true
     },

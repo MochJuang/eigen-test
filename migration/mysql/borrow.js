@@ -1,8 +1,8 @@
 module.exports = (sequelize, Sequelize) => sequelize.define('borrows', {
-    total_day_return: {
+    totalDaysReturn: {
         type: Sequelize.INTEGER
     },
-    return_timestamps: {
+    returnTimestamps: {
         type: Sequelize.DATE,
         allowNull: true
     },
