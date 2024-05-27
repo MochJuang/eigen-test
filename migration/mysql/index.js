@@ -34,6 +34,11 @@ db.borrows.belongsTo(db.books)
 
 db.init = () => {
     db.sequelize.sync()
+
+    // mock
+    const mock = require('./mock')
+    mock(db)
+        .then(() => console.log('mock completed'))
 }
 
 module.exports = db;

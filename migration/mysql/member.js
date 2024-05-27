@@ -1,12 +1,8 @@
 module.exports = (sequelize, Sequelize) => sequelize.define('members', {
-    id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-    },
-    name: {
+    code: {
         type: Sequelize.STRING
     },
-    address: {
+    name: {
         type: Sequelize.STRING
     },
     penalties_until: {
