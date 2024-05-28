@@ -1,0 +1,111 @@
+{
+	"info": {
+		"_postman_id": "f498f9d8-4a06-48be-8dcb-80d0b2b3b704",
+		"name": "Borrowing Book",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7914152"
+	},
+	"item": [
+		{
+			"name": "Book",
+			"item": [
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Borrow",
+			"item": [
+				{
+					"name": "borrow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"memberId\" : 1,\n    \"bookId\" : 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/borrow",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"borrow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "return",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"borrowId\" : 2,\n    \"memberId\" : 1\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/return",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"return"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Member",
+			"item": [
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/members",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
