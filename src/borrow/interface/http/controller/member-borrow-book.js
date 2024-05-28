@@ -3,6 +3,8 @@ const memberBorrowBookApplication = require('../../../application/member-borrow-
 const borrowingBook = async (req, res, next) => {
     try {
         const request = req.body;
+        console.log(request)
+
         const result = await memberBorrowBookApplication.borrowingBook(request);
         res.status(200).json({
             data: result

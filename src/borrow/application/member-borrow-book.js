@@ -6,28 +6,32 @@ const db = require('../../../migration/mysql/index')
 
 const borrowingBook = async (request) => {
     request = validate(requestBorrowBook, request)
-    await checkBookStatus(request.bookId)
-    await makeSureThatMemberNotBeingPenaltize(request.memberId)
-    await countBorrowBookByMemberId(request.memberId)
-    return create(request)
-}
+    let member = await getMember(request.memberId)
 
-const checkBookStatus = async (bookId) => {
-    let book = await db.books.findAll({
-        where: {
-            id: bookId
-        }
-    })
+    let book = await getBook(request.bookId)
 
+    // todo: checking stock
     if (book.stock === 0) {
         throw new RuntimeError("book borrowed by other member");
     }
+
+    // todo: member cannot currently penalize
+    await makeSureThatMemberNotBeingPenaltize(member)
+
+    // todo: member cannot borrow more than two book
+    await countBorrowBookByMemberId(member)
+
+    // todo: decrease stock book
+    await book.decrement('stock', {by : 1})
+
+    // todo: create borrow
+    return create(request)
 }
 
-const countBorrowBookByMemberId = async (memberId) => {
+const countBorrowBookByMemberId = async (member) => {
     let count = await db.borrows.count({
         where: {
-            memberId,
+            memberId : member.id,
             returnTimestamps: null
         }
     });
@@ -37,16 +41,11 @@ const countBorrowBookByMemberId = async (memberId) => {
     }
 }
 
-const makeSureThatMemberNotBeingPenaltize = async (memberId) => {
-    let member = await db.members.findOne({id : memberId})
-
-    if (!member) {
-        throw new RuntimeError("member not found")
-    }
-
-    if (member.returnTimestamps !== null) {
+const makeSureThatMemberNotBeingPenaltize = async (member) => {
+    if (member.penaltiesUntil !== null) {
         if (isDateInPast(member.penaltiesUntil)) {
-            await db.members.update(member.id, {penaltiesUntil : null})
+            member.penaltiesUntil = null
+            await member.save()
         } else {
             throw new RuntimeError("Member is currently being penalized")
         }
@@ -61,43 +60,50 @@ function isDateInPast(date) {
     return date < today;
 }
 
+
 const create = (borrow) => {
     return db.borrows.create(borrow)
 }
 
 const returnBook = async (request) => {
     request = validate(requestReturnBook, request)
-    let borrow = await returnedBookMustBeBookThatBorrowed(request)
-    await givePenaltyIfBorrowedMoreThan7Days(borrow)
-    await db.books.increment('stock', {by : 1})
-    return borrow
-}
 
-const returnedBookMustBeBookThatBorrowed = async (request) => {
-    let borrow = await db.borrows.findOne({
-        where: {
-            id: request.borrowId
-        }
-    })
+    let member = await getMember(request.memberId)
 
+    let borrow = await getBorrow(request.borrowId)
+
+    // todo: book must the borrow the member currently
     if (borrow.memberId !== request.memberId) {
         throw new RuntimeError("The returned book is a book that the member has borrowed");
     }
 
+    // todo: update borrow, and give penalize if return more then 7 days
+    await updateBorrowAndGivePenaltyIfBorrowedMoreThan7Days(borrow)
+
+    // todo: increase stock book
+    await increaseStockBook(borrow)
+
     return borrow
 }
 
-const givePenaltyIfBorrowedMoreThan7Days = async (borrow) => {
+
+
+const updateBorrowAndGivePenaltyIfBorrowedMoreThan7Days = async (borrow) => {
     let now = new Date()
     let diffDay = calculateDateDifference(borrow.createdAt, now)
     if (diffDay > 7) {
-        await db.members.update(borrow.memberId, {
-            penaltiesUntil : addDaysToToday(diffDay - 7)
+        await db.members.update({
+            penaltiesUntil : addDaysToToday(3)
+        }, {
+            where : {
+                id : borrow.memberId
+            }
         })
     }
 
-    let updated = { updatedTimestamp: now, totalDaysReturn: diffDay }
-    await db.borrows.update(borrow.id, updated)
+    borrow.returnTimestamps = now
+    borrow.totalDaysReturn = diffDay
+    await borrow.save()
 }
 
 function addDaysToToday(daysToAdd) {
@@ -110,6 +116,38 @@ const calculateDateDifference = (startDate, endDate) => {
     const timeDifference = Math.abs(endDate.getTime() - startDate.getTime());
     const dayDifference = timeDifference / (1000 * 60 * 60 * 24);
     return Math.floor(dayDifference);
+}
+
+const increaseStockBook = async (borrow) => {
+    let book = await db.books.findOne({where : {id: borrow.bookId}})
+    await book.increment('stock', {by : 1})
+}
+
+const getBook = async  (bookId) => {
+    let book = await db.books.findOne({where: {id: bookId}})
+    if (!book) {
+        throw new RuntimeError("book does not exist")
+    }
+
+    return book
+}
+
+const getMember = async (memberId) => {
+    let member= await db.members.findOne({where: {id: memberId}})
+    if (!member){
+        throw new RuntimeError("member not found")
+    }
+
+    return member
+}
+
+const getBorrow = async (borrowId) => {
+    let borrow = await db.borrows.findOne({where: {id: borrowId}})
+    if (!borrow) {
+        throw new RuntimeError("borrow not found")
+    }
+
+    return borrow
 }
 
 

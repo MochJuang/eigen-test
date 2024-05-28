@@ -1,9 +1,11 @@
 const migration = require('./migration/mysql');
-const http = require('./src/http');
+const app = require('./src/http');
+require('dotenv').config()
 
 function init() {
     migration.init()
-    http.init()
+    app.listen(process.env.PORT, () => console.log('server running on port http://localhost:' + process.env.PORT))
+
 }
 
 init()
