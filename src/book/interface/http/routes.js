@@ -1,5 +1,5 @@
 let express = require('express');
-let bookControlller = require('./controller/member-borrow-book')
+let bookControlller = require('./controller/book-controller')
 
 let router = express.Router();
 

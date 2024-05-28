@@ -1,5 +1,5 @@
 const db = require("../../../../../migration/mysql");
-const bookInfrastructure =  require('../../../application/member-borrow-book')
+const bookInfrastructure =  require('../../../application/book-application')
 const getAllBooks = async (req, res, next) => {
     try {
         const result = await bookInfrastructure.getAllBooks()

@@ -28,6 +28,7 @@ app.use(responseTime(function(req, res, time) {
 
 app.use(borrowRoutes)
 app.use(bookRoutes)
+app.use(memberRoutes)
 
 app.use(async(err, req, res, next) => {
     if (!err) {
